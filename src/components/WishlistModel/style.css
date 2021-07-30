@@ -1,3 +1,8 @@
 input.form-check-input {
     padding: 6px;
 }
+
+.wishlist-items{
+    height: 350px;
+    overflow: auto;
+}

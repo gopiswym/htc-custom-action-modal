@@ -4,6 +4,7 @@ import "./style.css";
 import * as _ from "lodash";
 import { useDispatch } from 'react-redux';
 import { fetchWishlistCateogory } from "../../app/reducer/wishlist-reducer"
+import ProgressBar from "@ramonak/react-progress-bar";
 
 const Counter = (props) => {
     let { count, setCount } = props;
@@ -74,6 +75,9 @@ const WishlistModel = (props) => {
     const [ selected, setSelected ] = useState([]);
     const [showAddList, setShowAddList] = useState(false);
     const [newListName, setNewListName] = useState('');
+    const [progress, setProgress] = useState(0);
+    const [ startLimit, setStartLimit] = useState(0);
+    const [ endLimit, setEndLimit] = useState(10);
 
     const createNewWishlist = ( ) => {
         window._swat.createList({lname: newListName}, ({lid})=>{
@@ -100,8 +104,15 @@ const WishlistModel = (props) => {
     }
 
     useEffect(()=>{
-        setSelected(_.cloneDeep(productList));
-        setAllProducts(_.cloneDeep(productList));
+        let selectedItems = productList.map((item)=>{
+            return {
+                ...item,
+                qty:item.qty?item.qty:1
+            }
+        })
+        setSelected(selectedItems);
+        setAllProducts(selectedItems);
+        //setAllProducts(_.cloneDeep(productList));
     },[productList.length])
     
     return (
@@ -124,7 +135,7 @@ const WishlistModel = (props) => {
                     <span className="p-2 h5 my-auto">{selected.length} Products Selected</span>
                 </div>
 
-                <div>
+                <div className="wishlist-items">
                     { allProducts && allProducts.map((item, index)=>{
                         console.log('product list changed', allProducts);
                         let selectedList = [...selected];
@@ -151,7 +162,7 @@ const WishlistModel = (props) => {
                                                 <h5>${item.pr}</h5>
                                             </div>
                                             <div className="col-6 row">
-                                                <Counter count={item.qty} setCount={(count)=>{
+                                                <Counter count={item.qty?item.qty:1} setCount={(count)=>{
                                                     item.qty = count;
                                                     selectedList[checkedIndex].qty = count;
                                                     setSelected([...selected]);
@@ -166,6 +177,9 @@ const WishlistModel = (props) => {
                 </div>
                 <div>
                     <TotalDetails selectedList={selected} />
+                </div>
+                <div className="col-10 m-2">
+                    <ProgressBar variant="success" completed={progress} />
                 </div>
                 <Modal size="lg" show={showAddList} onHide={()=>setShowAddList(false)}>
                     <Modal.Header closeButton>
@@ -201,6 +215,43 @@ const WishlistModel = (props) => {
                 </Button>
                 <Button variant="primary" disabled={selected.length==0} onClick={()=>{
                     console.log('on Submit, Selected Products',selected);
+                    let newList = selected.map((item)=>{
+                        let { epi, qty } = item;
+                        return {
+                            id:epi,
+                            quantity:qty?qty:1
+                        }
+                    })
+
+                    newList = newList.slice(startLimit, endLimit);
+                    console.log('new list to add', newList);
+                    window.fetch('/cart/add.js', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ items:newList })
+                      })
+                      .then((response) => {
+                            let { status } = response;
+                            if(status == 200){
+                                let limit = (endLimit+10)<=selected.length?(endLimit+10):selected.length;
+                                setStartLimit(endLimit);
+                                setEndLimit(limit);
+                                let percent = Math.round((endLimit/selected.length)*100);
+                                console.log('calculated percent', percent);
+                                setProgress(percent);
+                                if(percent==100){
+                                    setTimeout(()=>{
+                                        hide();
+                                    },4000);
+                                }
+                            }else{
+                                alert('Error adding to cart');
+                            }
+                      },(error)=>{
+                          console.log('on error = ', error);
+                      });
                 }}>
                     Creat Cart
                 </Button>
@@ -212,7 +263,7 @@ const WishlistModel = (props) => {
                         setShowAddList(true);
                     }}
                 >
-                    Dublicate List
+                    Duplicate List
                 </Button>
             </Modal.Footer>
         </Modal>
