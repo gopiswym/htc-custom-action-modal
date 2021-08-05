@@ -30,7 +30,7 @@ const Wishlist = () => {
 	console.log('wishlist ', wishlist);
 	return (
 		<div className="p-5">
-			<div className="row">
+			{/* <div className="row">
 				{
 					wishlistCategory && wishlistCategory.map((item, index)=>(
 						<Card key={index} className="p-4 mt-2" 
@@ -66,7 +66,7 @@ const Wishlist = () => {
 						</Card>
 					))
 				}
-			</div>
+			</div> */}
 			<WishlistModel open={showWishlist} hide={()=>{
 				setShowWishlist(false);
 				dispatch(resetWishlistCategory());

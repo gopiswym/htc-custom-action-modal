@@ -7,7 +7,7 @@ import { Provider } from 'react-redux';
 const App = () => (
 	<div id="app" className="wishlist">
 		<Provider store={store}>
-			<Header className="wishlist" />
+			{/* <Header className="wishlist" /> */}
 			<Wishlist />
 		</Provider>
 	</div>

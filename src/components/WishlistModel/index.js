@@ -118,6 +118,7 @@ const WishlistModel = (props) => {
                 qty:item.qty?item.qty:1
             }
         })
+        setProgress(0);
         setSelected(selectedItems);
         setAllProducts(selectedItems);
         //setAllProducts(_.cloneDeep(productList));
@@ -187,7 +188,7 @@ const WishlistModel = (props) => {
                     <TotalDetails selectedList={selected} />
                 </div>
                 <div className="col-10 m-2">
-                    <ProgressBar variant="success" completed={progress} />
+                    {progress && <ProgressBar variant="success" completed={progress} />}
                 </div>
                 {permalink && 
                 <div>
@@ -259,35 +260,43 @@ const WishlistModel = (props) => {
                         }
                     })
 
-                    newList = newList.slice(startLimit, endLimit);
-                    console.log('new list to add', newList);
-                    window.fetch('/cart/add.js', {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ items:newList })
-                      })
-                      .then((response) => {
-                            let { status } = response;
-                            if(status == 200){
-                                let limit = (endLimit+10)<=selected.length?(endLimit+10):selected.length;
-                                setStartLimit(endLimit);
-                                setEndLimit(limit);
-                                let percent = Math.round((endLimit/selected.length)*100);
-                                console.log('calculated percent', percent);
-                                setProgress(percent);
-                                if(percent==100){
-                                    setTimeout(()=>{
-                                        hide();
-                                    },4000);
+                    let totalPercent = progress;
+                    for(let i=0;i<(Math.ceil(newList.length/10));i++){
+                        let startIndex = i*10;
+                        let productlist = newList.slice(startIndex, (startIndex+10));
+                        console.log('adding dublicate items', { startIndex, productlist});
+                        window.fetch('/cart/add.js', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ items:productlist })
+                          })
+                          .then((response) => {
+                                let { status } = response;
+                                if(status == 200){
+                                    /* let limit = (endLimit+10)<=selected.length?(endLimit+10):selected.length;
+                                    setStartLimit(endLimit);
+                                    setEndLimit(limit); */
+                                    let percent = Math.round((productlist.length/newList.length)*100);
+                                    console.log('calculated percent', percent);
+                                    totalPercent += percent; 
+                                    setProgress(totalPercent);
+                                    if(totalPercent>=100){
+                                        setTimeout(()=>{
+                                            hide();
+                                        },4000);
+                                    }
+                                }else{
+                                    alert('Error adding to cart');
                                 }
-                            }else{
-                                alert('Error adding to cart');
-                            }
-                      },(error)=>{
-                          console.log('on error = ', error);
-                      });
+                          },(error)=>{
+                              console.log('on error = ', error);
+                          });
+                    }
+                    //newList = newList.slice(startLimit, endLimit);
+                    //console.log('new list to add', newList);
+                    
                 }}>
                     Creat Cart
                 </Button>
