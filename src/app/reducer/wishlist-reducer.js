@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
-export const fetchWishlistCateogory = createAsyncThunk(
+export const  fetchWishlistCateogory = createAsyncThunk(
     'wishlist/fetchWishlistCateogory',
     async () => {
         return await new Promise((resolve, reject)=>{
@@ -13,6 +13,15 @@ export const fetchWishlistCateogory = createAsyncThunk(
                     reject(error);
                 }
             });
+        });
+    }
+)
+
+export const  resetWishlistCategory = createAsyncThunk(
+    'wishlist/resetWishlistCategory',
+    async () => {
+        return await new Promise((resolve, reject)=>{
+            resolve([]);
         });
     }
 )
@@ -45,6 +54,10 @@ export const wishlistSlice = createSlice({
             state.wishlistCategory = action.payload;
         },
         [fetchWishList.fulfilled]:(state, action) =>{
+            console.log('on action response', action);
+            state.wishlist = action.payload;
+        },
+        [resetWishlistCategory.fulfilled]:(state, action) =>{
             console.log('on action response', action);
             state.wishlist = action.payload;
         }

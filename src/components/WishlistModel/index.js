@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {Form, Modal, Button, Card } from "react-bootstrap";
+import {Form, Modal, Button, Card, Alert } from "react-bootstrap";
 import "./style.css";
 import * as _ from "lodash";
 import { useDispatch } from 'react-redux';
@@ -78,6 +78,7 @@ const WishlistModel = (props) => {
     const [progress, setProgress] = useState(0);
     const [ startLimit, setStartLimit] = useState(0);
     const [ endLimit, setEndLimit] = useState(10);
+    const [ permalink, setPermalink] = useState(null);
 
     const createNewWishlist = ( ) => {
         window._swat.createList({lname: newListName}, ({lid})=>{
@@ -88,15 +89,22 @@ const WishlistModel = (props) => {
             let newList = selected.map((item)=>{
                 let { epi, empi, du, qty, note, cprops } = item;
                 return { epi, empi, du, qty, note, cprops };
-            })
-            window._swat.addProductsToList(lid, newList, (newListItem)=>{
-                // successfully added list item
-                console.log('on new list added',newListItem);
-                dispatch(fetchWishlistCateogory());
-              }, (xhrObj) => {
-                // something went wrong
-                console.log('error add products list',xhrObj);
-              });
+            });
+            for(let i=0;i<(Math.ceil(newList.length/10));i++){
+                let startIndex = i*10;
+                let productlist = newList.slice(startIndex, (startIndex+10));
+                console.log('adding dublicate items', { startIndex, productlist})
+                window._swat.addProductsToList(lid, productlist, (newListItem)=>{
+                    // successfully added list item
+                    console.log('on new list added',newListItem);
+                    if(i==Math.round(newList.length/10)){
+                        dispatch(fetchWishlistCateogory());
+                    }
+                }, (xhrObj) => {
+                    // something went wrong
+                    console.log('error add products list',xhrObj);
+                });
+            }
           }, (xhrObject)=>{
             // something went wrong
             console.log('error = ',xhrObject);
@@ -181,6 +189,18 @@ const WishlistModel = (props) => {
                 <div className="col-10 m-2">
                     <ProgressBar variant="success" completed={progress} />
                 </div>
+                {permalink && 
+                <div>
+                    <h5>Generated Permalink</h5> 
+                    <Alert variant="secondary" onClose={() => setPermalink(null)} dismissible>
+                        <div className="break">
+                            <h6>{permalink}</h6>
+                            {/* <Alert.Link href={permalink}>
+                                
+                            </Alert.Link> */}
+                        </div>
+                    </Alert>
+                </div>}
                 <Modal size="lg" show={showAddList} onHide={()=>setShowAddList(false)}>
                     <Modal.Header closeButton>
                         <Modal.Title>Create New List</Modal.Title>
@@ -212,6 +232,22 @@ const WishlistModel = (props) => {
             <Modal.Footer>
                 <Button variant="secondary" onClick={hide}>
                     Close
+                </Button>
+                <Button variant="primary" disabled={selected.length==0} onClick={()=>{
+                    console.log('on Submit, Selected Products',selected);
+                    let link = `https://swym105.myshopify.com/cart/`;
+                    selected.map((item, index)=>{
+                        let { epi, qty } = item;
+                        link += `${index>0?',':''}${epi}:${qty?qty:1}`; 
+                        /* return {
+                            id:epi,
+                            quantity:qty?qty:1
+                        } */
+                    })
+                    setPermalink(link);
+                    console.log('on link generated',link);
+                }}>
+                    Generate PermaLink
                 </Button>
                 <Button variant="primary" disabled={selected.length==0} onClick={()=>{
                     console.log('on Submit, Selected Products',selected);

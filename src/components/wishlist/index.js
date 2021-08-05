@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchWishlistCateogory, fetchWishList } from "../../app/reducer/wishlist-reducer"
+import { fetchWishlistCateogory, fetchWishList, resetWishlistCategory } from "../../app/reducer/wishlist-reducer"
 import WishlistModel from '../WishlistModel';
 
 const Wishlist = () => {
@@ -60,7 +60,10 @@ const Wishlist = () => {
 					))
 				}
 			</div>
-			<WishlistModel open={showWishlist} hide={()=>setShowWishlist(false)} productList={productList} />
+			<WishlistModel open={showWishlist} hide={()=>{
+				setShowWishlist(false);
+				dispatch(resetWishlistCategory());
+			}} productList={productList} />
 		</div>
 	);
 }
