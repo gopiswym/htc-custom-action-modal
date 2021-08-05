@@ -6,3 +6,7 @@ input.form-check-input {
     height: 350px;
     overflow: auto;
 }
+
+.wishlist-model{
+    z-index: 1999999999 !important; 
+}

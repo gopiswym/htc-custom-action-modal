@@ -16,6 +16,13 @@ const Wishlist = () => {
 
 	useEffect(() => {
 		dispatch(fetchWishlistCateogory());
+
+		window.SwymShowMoreOptions = function(obj) {
+			// open your modal
+			console.log('data for list',obj);
+			setShowWishlist(true);
+			setSelectedList(obj.list.items);
+		}
 	}, []);
 
 	let productList = _.cloneDeep(wishlist);
@@ -63,7 +70,7 @@ const Wishlist = () => {
 			<WishlistModel open={showWishlist} hide={()=>{
 				setShowWishlist(false);
 				dispatch(resetWishlistCategory());
-			}} productList={productList} />
+			}} productList={selectedList} />
 		</div>
 	);
 }

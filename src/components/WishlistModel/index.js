@@ -124,7 +124,7 @@ const WishlistModel = (props) => {
     },[productList.length])
     
     return (
-        <Modal size="lg" show={open} onHide={hide}>
+        <Modal size="lg" className="wishlist-model" show={open} onHide={hide}>
             <Modal.Header closeButton>
                 <Modal.Title>Make a draft order</Modal.Title>
             </Modal.Header>
