@@ -7,6 +7,9 @@ import { fetchWishlistCateogory } from "../../app/reducer/wishlist-reducer"
 import ProgressBar from "@ramonak/react-progress-bar";
 import { Clipboard } from 'react-bootstrap-icons';
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import axios from "axios";
+import { API_URL } from "../../config";
+import { CREATE_DRAFT_ORDER } from "../../api/query";
 
 const Counter = (props) => {
     let { count, setCount } = props;
@@ -321,6 +324,35 @@ const WishlistModel = (props) => {
                     }}
                 >
                     Duplicate List
+                </Button>
+                <Button 
+                    variant="outline-primary" 
+                    className="h5"
+                    disabled={selected.length==0} 
+                    onClick={()=>{
+                        let newList = selected.map((item)=>{
+                            let { epi, qty } = item;
+                            return {
+                                variantId:`gid://shopify/ProductVariant/${epi}`,
+                                quantity:qty?qty:1
+                            }
+                        })
+                        console.log('on Submit, Selected Products',selected);
+                        axios.post(API_URL,{
+                            pid: window._swat.pid,
+                            regid: window._swat.getSwymRegistrationId(),
+                            query:CREATE_DRAFT_ORDER,
+                            variables:{
+                                input:{
+                                    lineItems:newList
+                                }
+                            }
+                        }).then((data)=>{
+                            console.log('server response', data);
+                        })
+                    }}
+                >
+                    Create Draft Order
                 </Button>
             </Modal.Footer>
         </Modal>
