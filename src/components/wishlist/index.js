@@ -7,6 +7,7 @@ import WishlistModel from '../WishlistModel';
 const Wishlist = () => {
 	const [selectedList, setSelectedList] = useState([]);
 	const [showWishlist, setShowWishlist] = useState(false);
+	const [user, setUser] = useState({});
 	const wishlistCategory = useSelector((state)=>{
 		console.log('current state = ', state);
 		return state.wishlist && state.wishlist.wishlistCategory
@@ -22,6 +23,7 @@ const Wishlist = () => {
 			console.log('data for list',obj);
 			setShowWishlist(true);
 			setSelectedList(obj.list.items);
+			setUser(obj.user);
 		}
 	}, []);
 
@@ -70,7 +72,7 @@ const Wishlist = () => {
 			<WishlistModel open={showWishlist} hide={()=>{
 				setShowWishlist(false);
 				dispatch(resetWishlistCategory());
-			}} productList={selectedList} />
+			}} productList={selectedList} userInfo={user} />
 		</div>
 	);
 }

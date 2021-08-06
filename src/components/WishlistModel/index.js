@@ -5,6 +5,8 @@ import * as _ from "lodash";
 import { useDispatch } from 'react-redux';
 import { fetchWishlistCateogory } from "../../app/reducer/wishlist-reducer"
 import ProgressBar from "@ramonak/react-progress-bar";
+import { Clipboard } from 'react-bootstrap-icons';
+import { CopyToClipboard } from "react-copy-to-clipboard";
 
 const Counter = (props) => {
     let { count, setCount } = props;
@@ -16,11 +18,11 @@ const Counter = (props) => {
 
     return (
         <div className="row">
-            <div className="col-6">
-                <div>Quantity</div>
-                <div>{quantity}</div>
+            <div className="col-6 h5 d-flex">
+                <div className="m-2 text-secondary">Quantity</div>
+                <div className="m-2">{quantity}</div>
             </div>
-            <div className="col-6">
+            <div className="col-6 d-flex">
                 <div>
                     <Button className="m-1" onClick={()=>{
                         setQuantity(quantity+1);
@@ -55,20 +57,20 @@ const TotalDetails = (props) => {
             price += (item.pr*(item.qty?item.qty:0));
         });
         setTotalQuantity(totalQuantity);
-        setTotalPrice(price);
+        setTotalPrice(price.toFixed(2));
     })
 
     return (
-        <div className="row">
-            <div>Total Quantity {totalQuantity}</div>
-            <div>Total Price {totalPrice}</div>
+        <div className="row h5 m-3">
+            <div className="p-2"><span className="text-secondary">Total Quantity</span> <sapn className="pl-2">{totalQuantity}</sapn></div>
+            <div className="p-2"><span className="text-secondary">Total Price</span> <sapn className="pl-2 text-primary">{totalPrice}</sapn></div>
         </div>
     )
 }
 
 const WishlistModel = (props) => {
     
-    let { open, hide, productList } = props;
+    let { open, hide, productList, userInfo } = props;
     console.log('on open ', productList);
     const dispatch = useDispatch();
     const [ allProducts, setAllProducts ] = useState([]);
@@ -152,7 +154,7 @@ const WishlistModel = (props) => {
                         return (
                             <Card key={index} className="row m-2 p-3" style={{ textDecoration: 'none' }} >
                                 <div className="row">
-                                    <div  className="col-sm-12 col-md-3 col-lg-3 p-2 d-flex" >
+                                    <div  className="justify-content-center col-sm-12 col-md-3 col-lg-3 p-2 d-flex" >
                                         <Form.Check type="checkbox" label="" checked={(checkedIndex>-1)} onChange={(checkedItem)=>{
                                             console.log('on checked change', checkedItem.target.checked);                    if(checkedItem.target.checked){
                                                 selectedList.push(item);
@@ -166,9 +168,9 @@ const WishlistModel = (props) => {
                                     </div>
                                     <div className="col-sm-12 col-md-6 col-lg-8 p-2">
                                         <div className="row">
-                                            <div className="col-6">
+                                            <div className="col-6 mt-2">
                                                 <h4>{item.dt}</h4>
-                                                <h5>${item.pr}</h5>
+                                                <h2 className="text-primary mt-2">${item.pr.toFixed(2)}</h2>
                                             </div>
                                             <div className="col-6 row">
                                                 <Counter count={item.qty?item.qty:1} setCount={(count)=>{
@@ -188,11 +190,18 @@ const WishlistModel = (props) => {
                     <TotalDetails selectedList={selected} />
                 </div>
                 <div className="col-10 m-2">
-                    {progress && <ProgressBar variant="success" completed={progress} />}
+                    {progress>0 && <ProgressBar variant="success" completed={progress} />}
                 </div>
                 {permalink && 
                 <div>
-                    <h5>Generated Permalink</h5> 
+                    <h5>
+                        Generated Permalink
+                        <CopyToClipboard text={permalink}>
+                            <Button size="md" variant="outline-secondary" className="m-2">
+                                <Clipboard />
+                            </Button>
+                        </CopyToClipboard>
+                    </h5> 
                     <Alert variant="secondary" onClose={() => setPermalink(null)} dismissible>
                         <div className="break">
                             <h6>{permalink}</h6>
@@ -231,10 +240,11 @@ const WishlistModel = (props) => {
                 </Modal>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={hide}>
+                <Button variant="outline-secondary" className="h5" onClick={hide}>
                     Close
                 </Button>
-                <Button variant="primary" disabled={selected.length==0} onClick={()=>{
+                <Button variant="outline-primary" className="h5" disabled={selected.length==0} onClick={()=>{
+                    let { em, fname, lname } = userInfo;
                     console.log('on Submit, Selected Products',selected);
                     let link = `https://swym105.myshopify.com/cart/`;
                     selected.map((item, index)=>{
@@ -244,13 +254,14 @@ const WishlistModel = (props) => {
                             id:epi,
                             quantity:qty?qty:1
                         } */
-                    })
+                    });
+                    link += `?checkout[email]=${em}&checkout[shipping_address][first_name]=${fname}&checkout[shipping_address][last_name]=${lname}`;
                     setPermalink(link);
                     console.log('on link generated',link);
                 }}>
                     Generate PermaLink
                 </Button>
-                <Button variant="primary" disabled={selected.length==0} onClick={()=>{
+                <Button variant="outline-primary" className="h5" disabled={selected.length==0} onClick={()=>{
                     console.log('on Submit, Selected Products',selected);
                     let newList = selected.map((item)=>{
                         let { epi, qty } = item;
@@ -301,7 +312,8 @@ const WishlistModel = (props) => {
                     Creat Cart
                 </Button>
                 <Button 
-                    variant="primary" 
+                    variant="outline-primary" 
+                    className="h5"
                     disabled={selected.length==0} 
                     onClick={()=>{
                         console.log('on Submit, Selected Products',selected);
